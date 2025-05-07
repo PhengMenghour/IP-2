@@ -1,8 +1,7 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Feature;
 
-use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\TestCase;
 use App\Models\Category;
 

@@ -60,6 +60,15 @@ return [
             'report' => false,
         ],
 
+        'minio' => [
+            'driver' => 's3',
+            'key' => env('GBqrdhcWc84bNTubViny'),
+            'secret' => env('1HVSjO1vHy762UGXjVihronfVELagiS8hyGNFwCn'),
+            'region' => env('MINIO_REGION', 'us-east-1'),
+            'bucket' => env('TP9'),
+            'endpoint' => env('http://localhost:9001'),
+        ],
+
     ],
 
     /*
