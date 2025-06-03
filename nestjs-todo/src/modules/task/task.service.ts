@@ -32,6 +32,16 @@ export class TasksService {
     return task;
   }
 
+  async findOne(id: number){
+    const task = this.tasksRepo.findOne({where: {id}, relations: ['user']});
+    if (!task) {
+      throw new NotFoundException('Task with id ${id} not found')
+    }
+
+    return task;
+
+  }
+
   findAll() {
     return this.tasksRepo.find({ relations: ['user'] })
   }

@@ -47,13 +47,14 @@ export const useTodoStore = defineStore("todo", {
       const newTodo = {
         name: todo,
         description: "description",
+        userId: 1, // ✅ ADD this and make sure it's a number
       };
 
       try {
         const response = await axios.post("http://localhost:3100/tasks", newTodo);
         this.todos.push(response.data);
       } catch (error) {
-        console.error("Failed to add todo:", error);
+        console.error("Failed to add todo:", error?.response?.data || error);
       }
     },
 
