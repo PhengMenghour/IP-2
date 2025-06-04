@@ -26,22 +26,27 @@ export const useTodoStore = defineStore("todo", {
           let updateBody;
 
           if (this.todos[foundIndex].completedAt != null) {
-            // Task is completed, mark as pending
             url = `http://localhost:3100/tasks/${id}/pending`;
             updateBody = { completedAt: null };
           } else {
-            // Task is pending, mark as completed
             url = `http://localhost:3100/tasks/${id}/done`;
             updateBody = { completedAt: new Date().toISOString() };
           }
 
           const response = await axios.patch(url, updateBody);
-          this.todos[foundIndex] = response.data;  // Update local state with backend response
+
+          // ✅ Reactive-safe array update
+          const updatedTask = response.data;
+          this.todos = this.todos.map(task =>
+            task.id === updatedTask.id ? updatedTask : task
+          );
+
         } catch (error) {
           console.error('Failed to toggle task status:', error);
         }
       }
     },
+
 
     async addTodo(todo) {
       const newTodo = {

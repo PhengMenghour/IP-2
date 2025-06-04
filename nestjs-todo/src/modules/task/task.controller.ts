@@ -1,3 +1,4 @@
+// task.controller.ts
 import {
   Body,
   Controller,
@@ -28,25 +29,21 @@ export class TasksController {
   getTask(@Param('id', ParseIntPipe) id: number) {
     return this.taskService.getTask(id);
   }
-  // @Post()
-  // createTask(@Body() body: CreateTaskDto) {
-  //   return this.taskService.createTask(body);
-  // }
 
   @Post()
-  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @UsePipes(new ValidationPipe({ whitelist: true}))
   create(@Body() createTaskDto: CreateTaskDto) {
     return this.taskService.createTask(createTaskDto);
   }
 
   @Patch('/:id/done')
-  @UsePipes(new ValidationPipe({whitelist: true}))
+  @UsePipes(new ValidationPipe({whitelist: true})) // Ensure transform: true is here
   markTaskAsDone(@Body() updateTaskDto: UpdateTaskDto, @Param('id', ParseIntPipe) id: number) {
     return this.taskService.updateTask(id, updateTaskDto);
   }
 
   @Patch('/:id/pending')
-  @UsePipes(new ValidationPipe({whitelist: true}))
+  @UsePipes(new ValidationPipe({whitelist: true})) // Ensure transform: true is here
   markTaskAsPending(@Body() updateTaskDto: UpdateTaskDto, @Param('id', ParseIntPipe) id: number) {
     return this.taskService.updateTask(id, updateTaskDto);
   }
