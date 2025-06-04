@@ -19,7 +19,7 @@ export const useTodoStore = defineStore("todo", {
     },
 
     async toggleStatus(id) {
-      const foundIndex = this.todos.findIndex(t => t.id === id);
+      const foundIndex = this.todos.findIndex((t) => t.id === id);
       if (foundIndex >= 0) {
         try {
           let url;
@@ -36,9 +36,15 @@ export const useTodoStore = defineStore("todo", {
           }
 
           const response = await axios.patch(url, updateBody);
-          this.todos[foundIndex] = response.data;  // Update local state with backend response
+          console.log("PATCH response:", response.data);
+
+          // Use splice to replace item (ensures Vue reactivity)
+          this.todos.splice(foundIndex, 1, response.data);
+
+          // Optionally force refetch to debug:
+          // await this.fetchTodos();
         } catch (error) {
-          console.error('Failed to toggle task status:', error);
+          console.error("Failed to toggle task status:", error);
         }
       }
     },
@@ -47,7 +53,7 @@ export const useTodoStore = defineStore("todo", {
       const newTodo = {
         name: todo,
         description: "description",
-        userId: 1, // ✅ ADD this and make sure it's a number
+        userId: 1, // make sure this is a valid user id number
       };
 
       try {
@@ -65,6 +71,6 @@ export const useTodoStore = defineStore("todo", {
       } catch (error) {
         console.log("Failed to soft delete all todos: ", error);
       }
-    }
+    },
   },
 });

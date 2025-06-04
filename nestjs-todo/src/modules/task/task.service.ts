@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Task } from 'src/tasks/task.entity';
 import { Repository } from 'typeorm';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { NotificationService } from 'src/notification/notification.service';
 
 
 @Injectable()
@@ -10,6 +11,7 @@ export class TasksService {
   constructor(
     @InjectRepository(Task)
     private tasksRepo: Repository<Task>,
+    private readonly notifier: NotificationService
   ) { }
 
   async createTask(body: CreateTaskDto) {
@@ -17,7 +19,9 @@ export class TasksService {
       ...body,
       createdAt: new Date().toISOString(),
       completedAt: null,
+
     });
+    this.notifier.notify(`Task "${body.name}" created.`)
 
     return this.tasksRepo.save(newTask);
   }
@@ -26,14 +30,14 @@ export class TasksService {
     const task = await this.tasksRepo.findOne({ where: { id } });
 
     if (!task) {
-      throw new NotFoundException("Task with ID ${id} not found");
+      throw new NotFoundException(`Task with ID ${id} not found`);
     }
 
     return task;
   }
 
-  async findOne(id: number){
-    const task = this.tasksRepo.findOne({where: {id}, relations: ['user']});
+  async findOne(id: number) {
+    const task = await this.tasksRepo.findOne({ where: { id }, relations: ['user'] });
     if (!task) {
       throw new NotFoundException('Task with id ${id} not found')
     }
@@ -51,13 +55,15 @@ export class TasksService {
     if (!task) {
       throw new NotFoundException(`Task with ID ${id} not found`);
     }
-    return this.tasksRepo.save(task);
+    const saved = await this.tasksRepo.save(task);
+    // Return full updated task with relations (e.g. user)
+    return this.tasksRepo.findOne({ where: { id: saved.id }, relations: ['user'] });
   }
 
   async deleteTask(id: number) {
     const result = await this.tasksRepo.delete(id);
     if (result.affected === 0) {
-      throw new NotFoundException("Task with ID ${id} not found");
+      throw new NotFoundException(`Task with ID ${id} not found`);
     }
     return { message: 'success' }
   }
@@ -65,6 +71,6 @@ export class TasksService {
   async softDeleteAllTasks() {
     const tasks = await this.tasksRepo.find();
     await this.tasksRepo.softRemove(tasks);
-    return { message: "All tasks delete successfully" };
+    return { message: `All tasks delete successfully` };
   }
 }
