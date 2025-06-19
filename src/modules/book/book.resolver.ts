@@ -1,81 +1,84 @@
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from "@nestjs/graphql";
 
-@Resolver('Book')
+@Resolver("Booking")
 export class BookResolver {
-  private books = [
+  private bookings = [
     {
       id: 1,
-      title: 'Mathematic',
-      author: 'Dara',
-      price: 10,
+      start_date: new Date("2025-06-10T00:00:00Z"),
+      end_date: new Date("2025-06-12T00:00:00Z"),
+      hotel_id: 1,
+      is_checked_in: false,
+      price: 100,
     },
     {
       id: 2,
-      title: 'Physic',
-      author: 'Sok',
-      price: 20,
-    },
-    {
-      id: 3,
-      title: 'Chemistry',
-      author: 'Ratha',
-      price: 15,
+      start_date: new Date("2025-06-15T00:00:00Z"),
+      end_date: new Date("2025-06-17T00:00:00Z"),
+      hotel_id: 2,
+      is_checked_in: true,
+      price: 150,
     },
   ];
-  @Query('books')
-  getAllBooks() {
-    return this.books;
+
+  @Query("bookings")
+  getAllBookings() {
+    return this.bookings.map((b) => ({
+      ...b,
+      start_date: b.start_date ? b.start_date.toISOString() : null,
+      end_date: b.end_date ? b.end_date.toISOString() : null,
+    }));
+  }
+  @Query("booking")
+  getBookingById(@Args("id") id: number) {
+    return this.bookings.find((b) => b.id === id);
   }
 
-  @Query('book')
-  getBookById(@Args('id') id: number) {
-    return this.books.find((book) => book.id == id);
+  @Query("bookingsByDateRange")
+  getBookingsByDateRange(@Args("start") start: Date, @Args("end") end: Date) {
+    return this.bookings.filter(
+      (b) =>
+        new Date(b.start_date) >= new Date(start) &&
+        new Date(b.end_date) <= new Date(end),
+    );
   }
 
-  @Mutation('addBook')
-  addBook(@Args('title') title: string, @Args('price') price: number) {
-    const sortedBooks = this.books.sort((a, b) => a.id - b.id);
-    const lastId =
-      sortedBooks.length > 0 ? sortedBooks[sortedBooks.length - 1].id : 0;
-    const newBook = {
-      id: lastId + 1,
-      title,
-      price,
-      author: 'Unknown',
-    };
-    this.books.push(newBook);
-    return newBook;
-  }
-  @Mutation('updateBook')
-  updateBook(
-    @Args('id') id: number,
-    @Args('title') title: string,
-    @Args('price') price: number,
+  @Mutation("bookHotel")
+  bookHotel(
+    @Args("start_date") start_date: Date,
+    @Args("end_date") end_date: Date,
+    @Args("hotel_id") hotel_id: number,
+    @Args("price") price: number,
   ) {
-    const bookIndex = this.books.findIndex((book) => book.id == id);
-    if (bookIndex === -1) {
-      throw new Error('Book not found');
-    }
-    const updatedBook = {
-      ...this.books[bookIndex],
-      title,
+    const newId =
+      this.bookings.length > 0
+        ? Math.max(...this.bookings.map((b) => b.id)) + 1
+        : 1;
+    const newBooking = {
+      id: newId,
+      start_date: new Date(start_date),
+      end_date: new Date(end_date),
+      hotel_id,
+      is_checked_in: false,
       price,
     };
-    this.books[bookIndex] = updatedBook;
-    return updatedBook;
+    this.bookings.push(newBooking);
+    return newBooking;
   }
-  @Mutation('deleteBook')
-  deleteBook(@Args('id') id: number) {
-    try {
-      const bookIndex = this.books.findIndex((book) => book.id == id);
-      if (bookIndex === -1) {
-        return false;
-      }
-      this.books.splice(bookIndex, 1);
-      return true;
-    } catch (e) {
-      console.error(e);
-      return false;
-    }
+
+  @Mutation("cancelBooking")
+  cancelBooking(@Args("id") id: number) {
+    const index = this.bookings.findIndex((b) => b.id === id);
+    if (index === -1) return false;
+    this.bookings.splice(index, 1);
+    return true;
+  }
+
+  @Mutation("checkInBooking")
+  checkInBooking(@Args("id") id: number) {
+    const booking = this.bookings.find((b) => b.id === id);
+    if (!booking) throw new Error("Booking not found");
+    booking.is_checked_in = true;
+    return booking;
   }
 }

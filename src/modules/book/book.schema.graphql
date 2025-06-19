@@ -1,17 +1,26 @@
-type Book {
-  id: ID!
-  title: String!
-  author: String!
-  price: Int!
+type Booking {
+  id: Int!
+  start_date: String!   
+  end_date: String!     
+  hotel_id: Int!
+  is_checked_in: Boolean!
+  price: Float!
 }
 
 type Query {
-  books: [Book]
-  book(id: ID!): Book
+  bookings: [Booking!]!
+  booking(id: Int!): Booking
+  bookingsByDateRange(start: String!, end: String!): [Booking!]!
 }
 
 type Mutation {
-  addBook(title: String!, price: Int!): Book
-  updateBook(id: ID!, title: String, price: Int): Book
-  deleteBook(id: ID!): Boolean
+  bookHotel(
+    start_date: String!
+    end_date: String!
+    hotel_id: Int!
+    price: Float!
+  ): Booking!
+
+  cancelBooking(id: Int!): Boolean!
+  checkInBooking(id: Int!): Booking!
 }
